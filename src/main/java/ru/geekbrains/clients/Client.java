@@ -6,7 +6,6 @@ import ru.geekbrains.services.FileService;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Client extends JFrame implements Observer
@@ -17,15 +16,9 @@ public class Client extends JFrame implements Observer
     private static final int WIDTH = 555;
     private static final int HEIGHT = 507;
     private final JPanel panelTop = new JPanel(new GridLayout(2, 3));
-    private final JTextField textFieldIpAddress = new JTextField(IP_ADDRESS);
-    private final JTextField textFieldPort = new JTextField(PORT);
-    private final JPasswordField passwordFieldPassword = new JPasswordField(PASSWORD);
     private final JTextField textFieldName;
-    private final JButton buttonLogin = new JButton("Login");
     private final JTextArea textAreaClientLog = new JTextArea();
-    private final JPanel panelBottom = new JPanel(new BorderLayout());
     private final JTextField textFieldMessage = new JTextField();
-    private final JButton buttonSend = new JButton("Send");
     private boolean isLoggedIn;
     private final Server server;
     private final FileService fileService = new FileService();
@@ -41,11 +34,15 @@ public class Client extends JFrame implements Observer
         setResizable(false);
         setTitle("Client Chat");
 
+        JTextField textFieldIpAddress = new JTextField(IP_ADDRESS);
         panelTop.add(textFieldIpAddress);
+        JTextField textFieldPort = new JTextField(PORT);
         panelTop.add(textFieldPort);
         panelTop.add(new Label());
         panelTop.add(textFieldName);
+        JPasswordField passwordFieldPassword = new JPasswordField(PASSWORD);
         panelTop.add(passwordFieldPassword);
+        JButton buttonLogin = new JButton("Login");
         panelTop.add(buttonLogin);
         add(panelTop, BorderLayout.NORTH);
 
@@ -53,14 +50,14 @@ public class Client extends JFrame implements Observer
         JScrollPane scrollPane = new JScrollPane(textAreaClientLog);
         add(scrollPane);
 
+        JPanel panelBottom = new JPanel(new BorderLayout());
         panelBottom.add(textFieldMessage, BorderLayout.CENTER);
+        JButton buttonSend = new JButton("Send");
         panelBottom.add(buttonSend, BorderLayout.EAST);
         add(panelBottom, BorderLayout.SOUTH);
 
         buttonLogin.addActionListener(e -> login());
         buttonSend.addActionListener(e -> sendMessage());
-
-        loadFromLog();
 
         setVisible(true);
     }
@@ -97,6 +94,7 @@ public class Client extends JFrame implements Observer
             isLoggedIn = true;
             server.addObserver(this);
             textAreaClientLog.append("You are logged in\n");
+            getLoggedMessages();
             server.notifyObservers(textFieldName.getText() + " connected to Server");
             return;
         }
@@ -111,13 +109,11 @@ public class Client extends JFrame implements Observer
         }
     }
 
-    private void loadFromLog(){
-        List<String> messages = new ArrayList<>();
+    private void getLoggedMessages(){
+        List<String> messages = server.getLoggedMessages();
 
-        try {
-            messages = fileService.load();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+        if (messages == null){
+            return;
         }
 
         textAreaClientLog.append("*".repeat(20));

@@ -2,9 +2,11 @@ package ru.geekbrains.server;
 
 import ru.geekbrains.clients.Client;
 import ru.geekbrains.clients.Observer;
+import ru.geekbrains.services.FileService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +14,11 @@ public class Server extends JFrame implements Observed {
     private static final int WIDTH = 555;
     private static final int HEIGHT = 507;
 
-    private final JButton buttonStart = new JButton("Start Server");
-    private final JButton buttonStop = new JButton("Stop Server");
     private final JTextArea serverLog = new JTextArea();
     private boolean isServerActive;
-    private List<Observer> observers = new ArrayList<>();
+    private final List<Observer> observers = new ArrayList<>();
+    private List<String> loggedMessages = new ArrayList<>();
+    private final FileService fileService = new FileService();
 
 
     public Server() throws HeadlessException {
@@ -31,7 +33,9 @@ public class Server extends JFrame implements Observed {
         add(scrollPane);
 
         JPanel grid = new JPanel(new GridLayout(1, 2, 5, 0) );
+        JButton buttonStart = new JButton("Start Server");
         grid.add(buttonStart);
+        JButton buttonStop = new JButton("Stop Server");
         grid.add(buttonStop);
         JPanel flowDirection = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         flowDirection.add(grid);
@@ -46,6 +50,7 @@ public class Server extends JFrame implements Observed {
 
             isServerActive = true;
             serverLog.append("Server Started\n");
+            loadLoggedMessages();
         });
 
         buttonStop.addActionListener(e -> {
@@ -93,5 +98,17 @@ public class Server extends JFrame implements Observed {
 
     public boolean getServerStatus(){
         return isServerActive;
+    }
+
+    public List<String> getLoggedMessages(){
+        return loggedMessages;
+    }
+
+    private void loadLoggedMessages() {
+        try {
+            loggedMessages = fileService.load();
+        } catch (IOException e) {
+            serverLog.append(e.getMessage() + System.lineSeparator());
+        }
     }
 }
