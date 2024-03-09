@@ -1,9 +1,13 @@
 package ru.geekbrains.clients;
 
 import ru.geekbrains.server.Server;
+import ru.geekbrains.services.FileService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Client extends JFrame implements Observer
 {
@@ -24,6 +28,7 @@ public class Client extends JFrame implements Observer
     private final JButton buttonSend = new JButton("Send");
     private boolean isLoggedIn;
     private final Server server;
+    private final FileService fileService = new FileService();
 
 
     public Client(String name, Server server) {
@@ -55,6 +60,8 @@ public class Client extends JFrame implements Observer
         buttonLogin.addActionListener(e -> login());
         buttonSend.addActionListener(e -> sendMessage());
 
+        loadFromLog();
+
         setVisible(true);
     }
 
@@ -78,7 +85,9 @@ public class Client extends JFrame implements Observer
             return;
         }
 
-        server.notifyObservers(textFieldMessage.getText());
+        String message = textFieldName.getText() + " said: " + textFieldMessage.getText();
+        server.notifyObservers(message);
+        logger(message);
         textFieldMessage.setText("");
     }
 
@@ -92,6 +101,35 @@ public class Client extends JFrame implements Observer
             return;
         }
         textAreaClientLog.append("Remote server do not response!\n");
+    }
+
+    private void logger(String message){
+        try {
+            fileService.save(message + "\n");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void loadFromLog(){
+        List<String> messages = new ArrayList<>();
+
+        try {
+            messages = fileService.load();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+        textAreaClientLog.append("*".repeat(20));
+        textAreaClientLog.append(System.lineSeparator() + "LOGGED MESSAGES" + System.lineSeparator());
+
+        for (String message : messages){
+            textAreaClientLog.append(message);
+            textAreaClientLog.append(System.lineSeparator());
+        }
+
+        textAreaClientLog.append("*".repeat(20));
+        textAreaClientLog.append(System.lineSeparator());
     }
 
 }
