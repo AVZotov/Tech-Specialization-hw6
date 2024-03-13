@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileService {
+public class FileRepository implements Repository {
     public static final String FILE_NAME = "log.txt";
     public void save(String message) throws IOException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(FILE_NAME, true)) {

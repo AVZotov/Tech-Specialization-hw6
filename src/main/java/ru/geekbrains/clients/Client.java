@@ -1,7 +1,7 @@
 package ru.geekbrains.clients;
 
-import ru.geekbrains.server.Server;
-import ru.geekbrains.services.FileService;
+import ru.geekbrains.server.ServerController;
+import ru.geekbrains.services.FileRepository;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,13 +20,13 @@ public class Client extends JFrame implements Observer
     private final JTextArea textAreaClientLog = new JTextArea();
     private final JTextField textFieldMessage = new JTextField();
     private boolean isLoggedIn;
-    private final Server server;
-    private final FileService fileService = new FileService();
+    private final ServerController serverController;
+    private final FileRepository fileRepository = new FileRepository();
 
 
-    public Client(String name, Server server) {
+    public Client(String name, ServerController serverController) {
         textFieldName = new JTextField(name);
-        this.server = server;
+        this.serverController = serverController;
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(WIDTH, HEIGHT);
@@ -69,7 +69,7 @@ public class Client extends JFrame implements Observer
     public void logout(){
         panelTop.setVisible(true);
         isLoggedIn = false;
-        textAreaClientLog.append("You are disconnected from server!\n");
+        textAreaClientLog.append("You are disconnected from serverController!\n");
     }
 
     private void sendMessage(){
@@ -83,19 +83,19 @@ public class Client extends JFrame implements Observer
         }
 
         String message = textFieldName.getText() + " said: " + textFieldMessage.getText();
-        server.notifyObservers(message);
+        serverController.notifyObservers(message);
         logger(message);
         textFieldMessage.setText("");
     }
 
     private void login(){
-        if (server.getServerStatus()){
+        if (serverController.getServerStatus()){
             panelTop.setVisible(false);
             isLoggedIn = true;
-            server.addObserver(this);
+            serverController.addObserver(this);
             textAreaClientLog.append("You are logged in\n");
-            getLoggedMessages();
-            server.notifyObservers(textFieldName.getText() + " connected to Server");
+            //getLoggedMessages();
+            serverController.notifyObservers(textFieldName.getText() + " connected to ServerController");
             return;
         }
         textAreaClientLog.append("Remote server do not response!\n");
@@ -103,29 +103,29 @@ public class Client extends JFrame implements Observer
 
     private void logger(String message){
         try {
-            fileService.save(message + "\n");
+            fileRepository.save(message + "\n");
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 
-    private void getLoggedMessages(){
-        List<String> messages = server.getLoggedMessages();
-
-        if (messages == null){
-            return;
-        }
-
-        textAreaClientLog.append("*".repeat(20));
-        textAreaClientLog.append(System.lineSeparator() + "LOGGED MESSAGES" + System.lineSeparator());
-
-        for (String message : messages){
-            textAreaClientLog.append(message);
-            textAreaClientLog.append(System.lineSeparator());
-        }
-
-        textAreaClientLog.append("*".repeat(20));
-        textAreaClientLog.append(System.lineSeparator());
-    }
+//    private void getLoggedMessages(){
+//        List<String> messages = serverController.getLoggedMessages();
+//
+//        if (messages == null){
+//            return;
+//        }
+//
+//        textAreaClientLog.append("*".repeat(20));
+//        textAreaClientLog.append(System.lineSeparator() + "LOGGED MESSAGES" + System.lineSeparator());
+//
+//        for (String message : messages){
+//            textAreaClientLog.append(message);
+//            textAreaClientLog.append(System.lineSeparator());
+//        }
+//
+//        textAreaClientLog.append("*".repeat(20));
+//        textAreaClientLog.append(System.lineSeparator());
+//    }
 
 }
