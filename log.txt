@@ -1,4 +1,3 @@
-Sergey said: Hello
-Ivan said: Greatings!
-Ivan said: sdfHello
-Sergey said: sdfsdf
+Alexey: Hello Peter
+Peter: Hi
+Ivan: Hello everybody

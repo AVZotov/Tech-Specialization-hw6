@@ -33,12 +33,12 @@ public class ServerController implements Observed {
     }
 
     @Override
-    public void notifyObservers(Object notification) {
-        if (notification instanceof String message){
-            serverView.showMessage(message);
+    public void notifyObservers(Observer notificationOwner, String notification) {
+            serverView.showMessage(notification);
 
             for (Observer observer : observers){
-                observer.handleEvent(message);
+                if (!observer.equals(notificationOwner)){
+                observer.handleEvent(notification);
             }
         }
     }
@@ -49,6 +49,7 @@ public class ServerController implements Observed {
         }
 
         isServerActive = true;
+        loadLoggedMessages();
         return true;
     }
 
@@ -61,19 +62,56 @@ public class ServerController implements Observed {
         return true;
     }
 
-    public void receiveMessage(String message){
-        notifyObservers(message);
+    public boolean requestToConnect(Observer observer, String name) {
+        if (!isServerActive){
+            return false;
+        }
+        if (observers.contains(observer)){
+            return false;
+        }
+
+        addObserver(observer);
+        sendLoggedMessages(observer);
+        notifyObservers(observer, name + " connected to server");
+        return true;
     }
 
-    public boolean getServerStatus(){
-        return isServerActive;
+    public boolean requestToDisconnect(Observer observer, String observerName) {
+        removeObserver(observer);
+        notifyObservers(observer,observerName + " disconnected from server");
+
+        return true;
+    }
+
+    public void receiveMessage(Observer observer, String from, String message){
+        notifyObservers(observer, String.format("%s: %s", from, message));
+        saveMessageToLog(String.format("%s: %s", from, message));
+    }
+
+    private void sendLoggedMessages(Observer observer) {
+        observer.handleEvent("*".repeat(40));
+        observer.handleEvent("LOGGED MESSAGES");
+
+        for (String message : loggedMessages){
+            observer.handleEvent(message);
+        }
+
+        observer.handleEvent("*".repeat(40));
     }
 
     private void loadLoggedMessages() {
         try {
             loggedMessages = repository.load();
         } catch (IOException e) {
-            serverView.showMessage(e.getMessage() + System.lineSeparator());
+            serverView.showMessage(e.getMessage());
+        }
+    }
+
+    private void saveMessageToLog(String message){
+        try {
+            repository.save(message + System.lineSeparator());
+        } catch (IOException e) {
+            serverView.showMessage(e.getMessage());
         }
     }
 }

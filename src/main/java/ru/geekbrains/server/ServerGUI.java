@@ -39,12 +39,14 @@ public class ServerGUI extends JFrame implements ServerView {
     }
 
     private void createWindow(){
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
-                JOptionPane.showConfirmDialog(null,"Are sure to close server?");
+                if(JOptionPane.showConfirmDialog(e.getWindow(),"Are sure to close server?", "", JOptionPane.YES_NO_OPTION) == 0){
+                    e.getWindow().dispose();
+                }
             }
         });
         setSize(WIDTH, HEIGHT);
